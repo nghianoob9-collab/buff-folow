@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechFollow - Hệ Thống Tăng Follow Cao Cấp</title>
+    <title>TechFollow Pro - Hệ Thống Buff Follow Cao Cấp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
@@ -13,6 +14,7 @@
             --primary: #00f2ff;
             --secondary: #7000ff;
             --bg-dark: #050505;
+            --accent: #ff007a;
         }
 
         body {
@@ -20,11 +22,12 @@
             background-color: var(--bg-dark);
             color: #ffffff;
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
 
         .glass {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
@@ -36,448 +39,493 @@
 
         .btn-primary {
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
         }
 
-        /* Slider Custom */
         .slide {
             display: none;
-            animation: fade 0.8s ease-in-out;
+            animation: slideIn 0.8s ease-out;
         }
 
         .slide.active {
             display: block;
         }
 
-        @keyframes fade {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        /* Fake Progress bar for tool */
-        .progress-bar {
+        .progress-bar-fill {
             width: 0%;
-            height: 4px;
-            background: var(--primary);
-            box-shadow: 0 0 10px var(--primary);
-            transition: width 0.5s ease;
-        }
-
-        .tech-card:hover {
-            border-color: var(--primary);
-            background: rgba(0, 242, 255, 0.05);
-        }
-
-        .nav-link {
-            position: relative;
-        }
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            box-shadow: 0 0 15px var(--primary);
             transition: width 0.3s ease;
         }
-        .nav-link:hover::after {
+
+        .scan-line {
             width: 100%;
+            height: 2px;
+            background: var(--primary);
+            position: absolute;
+            top: 0; left: 0;
+            box-shadow: 0 0 15px var(--primary);
+            animation: scan 3s infinite linear;
+            z-index: 10;
+        }
+
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        #wheel-container {
+            width: 300px;
+            height: 300px;
+            border: 10px solid #222;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            left: 0; top: 0;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .console-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 10px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Header & Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-20">
-                <div class="flex items-center gap-3">
-                    <img src="https://i.postimg.cc/sxB7Gk7V/Chat-GPT-Image-16-18-40-3-thg-12-2025.png" alt="TechFollow Logo" class="w-12 h-12 object-contain rounded-xl shadow-lg shadow-cyan-500/20">
-                    <span class="text-2xl font-extrabold tracking-tighter uppercase">TECH<span class="text-cyan-400">FOLLOW</span></span>
-                </div>
-                
-                <!-- Desktop Menu -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#" class="nav-link font-medium">Trang Chủ</a>
-                    <a href="#tool" class="nav-link font-medium">Công Cụ</a>
-                    <a href="#services" class="nav-link font-medium">Dịch Vụ</a>
-                    <a href="#contact" class="nav-link font-medium">Liên Hệ</a>
-                    <button class="btn-primary px-6 py-2.5 rounded-full text-sm font-bold">Bắt Đầu Ngay</button>
-                </div>
+    <!-- Top Announcement -->
+    <div class="bg-gradient-to-r from-cyan-600 to-purple-600 py-2 text-center text-[10px] font-bold uppercase tracking-[0.2em] relative z-[60]">
+        🔥 Thông báo: Hệ thống 2026 đã sẵn sàng. Buff ngay để nhận ưu đãi từ NgzhiaIT 🔥
+    </div>
 
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="p-2">
-                        <i data-lucide="menu"></i>
-                    </button>
+    <!-- Header -->
+    <nav class="fixed top-10 w-full z-50 px-4">
+        <div class="max-w-7xl mx-auto glass border border-white/10 rounded-2xl px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3 group cursor-pointer" onclick="window.scrollTo(0,0)">
+                <img src="https://i.postimg.cc/sxB7Gk7V/Chat-GPT-Image-16-18-40-3-thg-12-2025.png" alt="Logo" class="w-10 h-10 object-contain rounded-xl">
+                <span class="text-xl font-extrabold tracking-tighter uppercase text-white hidden sm:inline">TECH<span class="text-cyan-400">FOLLOW</span></span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-6 text-sm font-medium">
+                <a href="#" class="hover:text-cyan-400 transition-colors">Trang Chủ</a>
+                <a href="#tool" class="hover:text-cyan-400 transition-colors text-cyan-400">Buff Follow</a>
+                <a href="#deposit" class="hover:text-cyan-400 transition-colors">Nạp Tiền</a>
+                <a href="#wheel" class="hover:text-cyan-400 transition-colors">Vòng Quay</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col items-end">
+                    <span class="text-[10px] text-gray-500 font-bold uppercase">Số dư ví</span>
+                    <span class="text-sm font-bold text-white"><span id="user-balance">0</span>đ</span>
                 </div>
+                <button id="mobile-menu-btn" class="md:hidden p-2"><i data-lucide="menu"></i></button>
             </div>
         </div>
         
-        <!-- Mobile Menu (Hidden by default) -->
-        <div id="mobile-menu" class="hidden md:hidden glass border-b border-white/10 p-4 space-y-4">
-            <a href="#" class="block text-lg">Trang Chủ</a>
-            <a href="#tool" class="block text-lg">Công Cụ</a>
-            <a href="#services" class="block text-lg">Dịch Vụ</a>
-            <a href="#contact" class="block text-lg">Liên Hệ</a>
+        <div id="mobile-menu" class="hidden glass mt-2 rounded-2xl p-4 space-y-4 border border-white/10">
+            <a href="#" class="block">Trang Chủ</a>
+            <a href="#tool" class="block">Buff Follow</a>
+            <a href="#deposit" class="block">Nạp Tiền</a>
+            <a href="#wheel" class="block">Vòng Quay</a>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="pt-20">
-        
-        <!-- Hero Slider Section -->
-        <section class="relative overflow-hidden py-20 px-4">
-            <div class="max-w-7xl mx-auto">
-                <div id="hero-slider" class="relative h-[400px] md:h-[500px]">
-                    <!-- Slide 1 -->
-                    <div class="slide active">
-                        <div class="grid md:grid-cols-2 gap-10 items-center h-full">
-                            <div class="space-y-6">
-                                <h1 class="text-5xl md:text-7xl font-black leading-tight">
-                                    Bứt Phá <span class="gradient-text">Follow</span> <br>Trong Tích Tắc
-                                </h1>
-                                <p class="text-gray-400 text-lg max-w-md">
-                                    Hệ thống tự động hóa 100% giúp bạn xây dựng thương hiệu cá nhân trên mạng xã hội một cách bền vững và an toàn.
-                                </p>
-                                <div class="flex gap-4">
-                                    <button class="btn-primary px-8 py-4 rounded-xl font-bold flex items-center gap-2">
-                                        Thử ngay <i data-lucide="arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="hidden md:flex justify-center relative">
-                                <div class="w-80 h-80 rounded-full bg-cyan-500/20 blur-[100px] absolute"></div>
-                                <img src="https://img.icons8.com/clouds/500/facebook-new.png" alt="Facebook Illustration" class="w-64 h-64 object-contain animate-bounce">
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Slide 2 -->
-                    <div class="slide">
-                        <div class="grid md:grid-cols-2 gap-10 items-center h-full">
-                            <div class="space-y-6">
-                                <h1 class="text-5xl md:text-7xl font-black leading-tight">
-                                    Làm Chủ <span class="text-pink-500">TikTok</span> <br>Triệu View
-                                </h1>
-                                <p class="text-gray-400 text-lg max-w-md">
-                                    Tăng tương tác, tăng follower thực giúp kênh của bạn dễ dàng lên xu hướng và tiếp cận hàng triệu khách hàng.
-                                </p>
-                                <div class="flex gap-4">
-                                    <button class="bg-white text-black hover:bg-gray-200 px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all">
-                                        Khám phá <i data-lucide="play"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="hidden md:flex justify-center relative">
-                                <div class="w-80 h-80 rounded-full bg-pink-500/20 blur-[100px] absolute"></div>
-                                <img src="https://img.icons8.com/clouds/500/tiktok.png" alt="TikTok Illustration" class="w-64 h-64 object-contain animate-pulse">
-                            </div>
-                        </div>
-                    </div>
+    <main class="pt-32">
+        <!-- Hero -->
+        <section class="py-10 px-4 max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+            <div class="space-y-6">
+                <h1 class="text-6xl font-black leading-tight text-white">Làm Chủ <br><span class="gradient-text">Mạng Xã Hội</span></h1>
+                <p class="text-gray-400">Hệ thống buff follow tự động, bảo mật và cực nhanh. Tăng uy tín cho tài khoản của bạn chỉ sau vài phút.</p>
+                <div class="flex gap-4">
+                    <a href="#tool" class="btn-primary px-8 py-4 rounded-xl font-bold text-white">BUFF NGAY</a>
+                    <button onclick="addBalance(100000)" class="glass px-8 py-4 rounded-xl font-bold text-cyan-400 border border-cyan-500/30">NẠP 100K (TEST)</button>
                 </div>
+            </div>
+            <div class="hidden md:block">
+                <img src="https://img.icons8.com/clouds/500/rocket.png" alt="Hero" class="animate-pulse">
             </div>
         </section>
 
-        <!-- Tool Section -->
-        <section id="tool" class="py-20 bg-black/50">
-            <div class="max-w-4xl mx-auto px-4">
-                <div class="glass rounded-3xl p-8 md:p-12">
-                    <div class="text-center mb-10">
-                        <h2 class="text-3xl font-bold mb-2">Bảng Điều Khiển Buff Follow</h2>
-                        <p class="text-gray-400">Vui lòng chọn nền tảng và nhập thông tin cần thiết</p>
-                    </div>
+        <!-- Tool -->
+        <section id="tool" class="py-20 px-4">
+            <div class="max-w-6xl mx-auto grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 glass p-8 md:p-10 rounded-[40px] border border-white/10 tech-border">
+                    <h2 class="text-3xl font-black mb-8 text-white flex items-center gap-3">
+                        <i data-lucide="zap" class="text-yellow-400"></i> BẢNG ĐIỀU KHIỂN BUFF
+                    </h2>
 
-                    <!-- Platform Tabs -->
-                    <div class="flex p-1 bg-white/5 rounded-2xl mb-8">
-                        <button onclick="switchPlatform('facebook')" id="tab-fb" class="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all bg-blue-600">
-                            <i data-lucide="facebook"></i> Facebook
-                        </button>
-                        <button onclick="switchPlatform('tiktok')" id="tab-tt" class="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-white/5">
-                            <i data-lucide="music-2"></i> TikTok
-                        </button>
-                    </div>
-
-                    <!-- Input Form -->
                     <div class="space-y-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-400 mb-2">Đường dẫn hoặc Username</label>
-                            <div class="relative">
-                                <i data-lucide="link" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5"></i>
-                                <input type="text" id="target-id" placeholder="https://facebook.com/user..." class="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500 transition-all">
-                            </div>
+                        <div class="flex p-1 bg-white/5 rounded-2xl border border-white/10">
+                            <button onclick="setPlatform('facebook')" id="btn-fb" class="flex-1 py-3 rounded-xl transition-all bg-blue-600 text-white font-bold">Facebook</button>
+                            <button onclick="setPlatform('tiktok')" id="btn-tt" class="flex-1 py-3 rounded-xl transition-all hover:bg-white/5 text-white font-bold">TikTok</button>
                         </div>
 
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Số lượng Follow cần tăng</label>
-                                <input type="number" id="quantity" value="1000" min="100" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none focus:border-cyan-500">
+                                <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Link / Username</label>
+                                <input type="text" id="target-id" placeholder="Dán link tại đây..." class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 text-white focus:border-cyan-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-400 mb-2">Tốc độ thực hiện</label>
-                                <select class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none focus:border-cyan-500">
-                                    <option class="bg-gray-900">Nhanh (Cấp tốc)</option>
-                                    <option class="bg-gray-900">Trung bình (Tự nhiên)</option>
-                                    <option class="bg-gray-900">Chậm (An toàn nhất)</option>
+                                <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Chọn Server</label>
+                                <select id="server-select" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 text-white outline-none bg-black">
+                                    <option value="1">Server 1 - Giá rẻ (10đ/fl)</option>
+                                    <option value="2">Server 2 - Tốc độ (25đ/fl)</option>
+                                    <option value="vip">Server VIP - Bảo hành (50đ/fl)</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- Progress Section -->
-                        <div id="progress-container" class="hidden space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <span id="status-text">Đang kết nối API...</span>
-                                <span id="percent-text">0%</span>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 uppercase mb-2 block">Số lượng Follow</label>
+                            <input type="number" id="quantity" value="1000" min="100" step="100" oninput="updatePrice()" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 text-white focus:border-cyan-500 outline-none">
+                        </div>
+
+                        <div class="bg-cyan-500/10 p-5 rounded-2xl border border-cyan-500/20 flex justify-between items-center">
+                            <span class="text-sm font-bold text-cyan-400">TỔNG THANH TOÁN:</span>
+                            <span class="text-2xl font-black text-white"><span id="total-price">10.000</span>đ</span>
+                        </div>
+
+                        <!-- Console Animation -->
+                        <div id="status-box" class="hidden glass p-6 rounded-2xl border border-white/10 space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-black text-cyan-400 uppercase" id="status-label">Đang kết nối...</span>
+                                <span class="text-xl font-black text-white" id="percent-val">0%</span>
                             </div>
-                            <div class="w-full bg-white/5 rounded-full overflow-hidden">
-                                <div id="progress-fill" class="progress-bar"></div>
+                            <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                                <div id="progress-bar" class="progress-bar-fill"></div>
+                            </div>
+                            <div id="console-log" class="console-text text-gray-500 h-20 overflow-y-auto space-y-1">
+                                <!-- Logs go here -->
                             </div>
                         </div>
 
-                        <button onclick="startBoost()" id="boost-btn" class="w-full btn-primary py-5 rounded-2xl font-black text-lg tracking-widest uppercase">
-                            Bắt đầu Buff Ngay
-                        </button>
+                        <button onclick="handleBuff()" id="btn-submit" class="w-full btn-primary py-5 rounded-2xl font-black text-lg text-white tracking-widest uppercase">XÁC NHẬN BUFF</button>
+                    </div>
+                </div>
+
+                <!-- Sidebar History -->
+                <div class="glass p-8 rounded-[40px] border border-white/10">
+                    <h3 class="font-black text-white mb-6 flex items-center gap-2">
+                        <i data-lucide="history" class="text-cyan-400"></i> LỊCH SỬ ĐƠN
+                    </h3>
+                    <div id="history-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        <!-- History items -->
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Services/Categories Section -->
-        <section id="services" class="py-20 max-w-7xl mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-black mb-4">Danh Mục Dịch Vụ</h2>
-                <div class="w-20 h-1 bg-cyan-500 mx-auto"></div>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Card 1 -->
-                <div class="glass tech-card p-8 rounded-3xl border border-white/10 transition-all cursor-pointer">
-                    <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center mb-6">
-                        <i data-lucide="users" class="text-cyan-400"></i>
+        <!-- Lucky Wheel -->
+        <section id="wheel" class="py-20 px-4">
+            <div class="max-w-4xl mx-auto text-center space-y-10">
+                <h2 class="text-4xl font-black text-white">VÒNG QUAY <span class="gradient-text">QUÀ TẶNG</span></h2>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-10">
+                    <div class="relative">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 z-10 text-white"><i data-lucide="chevron-down"></i></div>
+                        <div id="wheel-container" class="glass shadow-2xl"></div>
+                        <button onclick="spinWheel()" id="spin-btn" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white text-black rounded-full font-bold">QUAY</button>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Tăng Follower Thật</h3>
-                    <p class="text-gray-400">Tài khoản có hoạt động, ảnh đại diện và bài viết đầy đủ, cam kết không tụt.</p>
-                </div>
-                <!-- Card 2 -->
-                <div class="glass tech-card p-8 rounded-3xl border border-white/10 transition-all cursor-pointer">
-                    <div class="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6">
-                        <i data-lucide="heart" class="text-purple-400"></i>
+                    <div class="text-left glass p-6 rounded-2xl border border-white/10 space-y-4">
+                        <p class="text-sm font-bold text-white">Giải thưởng hôm nay:</p>
+                        <ul class="text-xs text-gray-500 space-y-2">
+                            <li>🎁 1.000đ - 50.000đ cộng trực tiếp</li>
+                            <li>🎁 Mã giảm giá 20% buff follow</li>
+                            <li>🎁 Server VIP trải nghiệm free</li>
+                        </ul>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Tăng Like/Tim</h3>
-                    <p class="text-gray-400">Tăng tương tác cho bài viết và video, giúp tiếp cận được nhiều người dùng hơn.</p>
-                </div>
-                <!-- Card 3 -->
-                <div class="glass tech-card p-8 rounded-3xl border border-white/10 transition-all cursor-pointer">
-                    <div class="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6">
-                        <i data-lucide="shield-check" class="text-green-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Bảo Mật Tuyệt Đối</h3>
-                    <p class="text-gray-400">Không yêu cầu mật khẩu, cam kết bảo mật thông tin khách hàng 100%.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="contact" class="py-20 relative">
-            <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-16 items-center">
-                <div>
-                    <h2 class="text-4xl font-black mb-6">Liên Hệ Với <br><span class="gradient-text">Đội Ngũ Kỹ Thuật</span></h2>
-                    <p class="text-gray-400 mb-8 text-lg">Bạn gặp vấn đề khi sử dụng tool? Hãy để lại lời nhắn, đội ngũ hỗ trợ 24/7 của chúng tôi sẽ phản hồi ngay lập tức.</p>
-                    
+        <!-- Deposit -->
+        <section id="deposit" class="py-20 px-4 bg-white/5">
+            <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+                <div class="flex flex-col items-center">
+                    <div class="relative glass p-4 rounded-[40px] border-2 border-white/10 overflow-hidden shadow-2xl">
+                        <div class="scan-line"></div>
+                        <img src="https://i.postimg.cc/SRrGbJHx/z7437283790022-dd8fe9b483325a7c134e6d2206b6a7a9.jpg" alt="QR" class="w-80 h-80 object-cover rounded-3xl">
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <h2 class="text-4xl font-black text-white leading-tight">Nạp Tiền <br><span class="gradient-text">Auto 24/7</span></h2>
                     <div class="space-y-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 glass rounded-full flex items-center justify-center text-cyan-400">
-                                <i data-lucide="mail"></i>
-                            </div>
-                            <span>nghianoob9@gmail.com</span>
+                        <div class="glass p-5 rounded-2xl flex justify-between items-center group">
+                            <div><p class="text-[10px] text-gray-500 font-bold">SỐ TÀI KHOẢN</p><p class="text-xl font-black text-white">0388977874</p></div>
+                            <button onclick="copyText('0388977874')" class="text-cyan-400"><i data-lucide="copy"></i></button>
                         </div>
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 glass rounded-full flex items-center justify-center text-purple-400">
-                                <i data-lucide="phone"></i>
-                            </div>
-                            <span>+84 388 977 874</span>
+                        <div class="glass p-5 rounded-2xl flex justify-between items-center">
+                            <div><p class="text-[10px] text-gray-500 font-bold">CHỦ TÀI KHOẢN</p><p class="text-xl font-black text-white">Y NGHIA HLONG</p></div>
+                            <i data-lucide="user" class="text-gray-700"></i>
+                        </div>
+                        <div class="bg-cyan-500/10 p-5 rounded-2xl border border-cyan-500/30">
+                            <p class="text-[10px] text-cyan-400 font-bold uppercase mb-1">Nội dung chuyển khoản:</p>
+                            <p class="text-lg font-black text-white tracking-widest">NAP NGZHIAIT [Tên_Của_Bạn]</p>
                         </div>
                     </div>
-                </div>
-
-                <div class="glass p-8 rounded-3xl">
-                    <form class="space-y-4" onsubmit="event.preventDefault(); showToast('Tin nhắn của bạn đã được gửi!');">
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" placeholder="Họ tên" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none">
-                            <input type="email" placeholder="Email" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none">
-                        </div>
-                        <textarea placeholder="Nội dung cần hỗ trợ..." rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none"></textarea>
-                        <button class="w-full btn-primary py-4 rounded-xl font-bold">Gửi Tin Nhắn</button>
-                    </form>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-white/10 py-12 glass mt-20">
+    <footer class="py-16 glass mt-20 border-t border-white/10 text-center">
         <div class="max-w-7xl mx-auto px-4">
-            <div class="grid md:grid-cols-4 gap-12 mb-12">
-                <div class="col-span-2">
-                    <div class="flex items-center gap-3 mb-6">
-                        <img src="https://i.postimg.cc/sxB7Gk7V/Chat-GPT-Image-16-18-40-3-thg-12-2025.png" alt="TechFollow Logo" class="w-10 h-10 object-contain rounded-lg shadow-md shadow-cyan-500/10">
-                        <span class="text-xl font-extrabold tracking-tighter uppercase">TechFollow</span>
-                    </div>
-                    <p class="text-gray-400 max-w-sm">Dẫn đầu về giải pháp tăng trưởng mạng xã hội tại Việt Nam. Sử dụng công nghệ AI để tối ưu hóa tương tác thực.</p>
-                </div>
-                <div>
-                    <h4 class="font-bold mb-6">Liên Kết Nhanh</h4>
-                    <ul class="space-y-4 text-gray-400">
-                        <li><a href="#" class="hover:text-cyan-400 transition-all">Quy định sử dụng</a></li>
-                        <li><a href="#" class="hover:text-cyan-400 transition-all">Chính sách bảo mật</a></li>
-                        <li><a href="#" class="hover:text-cyan-400 transition-all">Câu hỏi thường gặp</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-bold mb-6">Theo Dõi Chúng Tôi</h4>
-                    <div class="flex gap-4">
-                        <div class="w-10 h-10 glass rounded-lg flex items-center justify-center hover:bg-cyan-500/20 cursor-pointer">
-                            <i data-lucide="facebook" class="w-5 h-5"></i>
-                        </div>
-                        <div class="w-10 h-10 glass rounded-lg flex items-center justify-center hover:bg-purple-500/20 cursor-pointer">
-                            <i data-lucide="instagram" class="w-5 h-5"></i>
-                        </div>
-                        <div class="w-10 h-10 glass rounded-lg flex items-center justify-center hover:bg-white/20 cursor-pointer">
-                            <i data-lucide="twitter" class="w-5 h-5"></i>
-                        </div>
-                    </div>
-                </div>
+            <div class="flex items-center justify-center gap-3 mb-8">
+                <img src="https://i.postimg.cc/sxB7Gk7V/Chat-GPT-Image-16-18-40-3-thg-12-2025.png" alt="Logo" class="w-10 h-10 object-contain">
+                <span class="text-xl font-extrabold text-white">TECHFOLLOW</span>
             </div>
-            <div class="text-center pt-8 border-t border-white/5 text-gray-500 text-sm">
-                &copy; 2026 TechFollow Global.NgzhiaIT. All rights reserved. Designed with ❤️ by DevTech.
-            </div>
+            <p class="text-xs text-gray-600 uppercase tracking-widest">
+                &copy; 2026 TechFollow Global.NgzhiaIT. Designed with ❤️ by DevTech.
+            </p>
         </div>
     </footer>
 
-    <!-- Custom Toast Message -->
-    <div id="toast" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 z-[100]">
-        <div class="glass bg-white/10 px-6 py-4 rounded-2xl flex items-center gap-4 border-cyan-500/50">
-            <i data-lucide="check-circle" class="text-cyan-400"></i>
-            <span id="toast-message">Thành công!</span>
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 transform translate-y-20 opacity-0 transition-all duration-500 z-[100]">
+        <div class="glass bg-black/90 px-8 py-4 rounded-2xl flex items-center gap-4 border-cyan-500/50 shadow-2xl">
+            <div id="toast-icon" class="w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center">
+                <i data-lucide="check" class="text-black w-4 h-4"></i>
+            </div>
+            <span id="toast-message" class="font-bold text-sm text-white">Thành công!</span>
         </div>
     </div>
 
     <script>
-        // Initialize Lucide Icons
-        lucide.createIcons();
-
-        // Mobile Menu Logic
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        
-        mobileMenuBtn.onclick = () => {
-            mobileMenu.classList.toggle('hidden');
+        // --- Core Data Management ---
+        const STORAGE_KEY = 'NGZHIAIT_STATE';
+        let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            balance: 0,
+            history: []
         };
 
-        // Slider Logic
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            renderUI();
         }
 
-        setInterval(nextSlide, 5000);
-
-        // Platform Switcher
-        let activePlatform = 'facebook';
-        function switchPlatform(platform) {
-            activePlatform = platform;
-            const tabFb = document.getElementById('tab-fb');
-            const tabTt = document.getElementById('tab-tt');
-            const input = document.getElementById('target-id');
-
-            if (platform === 'facebook') {
-                tabFb.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all bg-blue-600';
-                tabTt.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-white/5';
-                input.placeholder = 'https://facebook.com/user...';
-            } else {
-                tabFb.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-white/5';
-                tabTt.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all bg-pink-600';
-                input.placeholder = '@username_tiktok';
-            }
+        function renderUI() {
+            document.getElementById('user-balance').innerText = state.balance.toLocaleString('vi-VN');
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = state.history.length ? '' : '<p class="text-center text-gray-600 text-xs py-10">Chưa có đơn hàng nào.</p>';
+            
+            state.history.slice().reverse().forEach(order => {
+                const item = document.createElement('div');
+                item.className = 'glass p-4 rounded-xl border border-white/5 flex justify-between items-center text-xs';
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-white">${order.target}</p>
+                        <p class="text-[10px] text-gray-500">${order.platform.toUpperCase()} - ${order.time}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-black text-cyan-400">+${order.qty.toLocaleString()}</p>
+                        <span class="text-[8px] bg-green-500/20 text-green-400 px-1 rounded uppercase">Thành công</span>
+                    </div>
+                `;
+                historyList.appendChild(item);
+            });
         }
 
-        // Tool Logic (Simulation)
-        function startBoost() {
-            const targetId = document.getElementById('target-id').value;
-            if (!targetId) {
-                showToast("Vui lòng nhập thông tin tài khoản!");
+        // --- Logic Functions ---
+        function addBalance(amount) {
+            state.balance += amount;
+            showToast(`Đã nạp ${amount.toLocaleString()}đ vào ví!`);
+            saveState();
+        }
+
+        let currentPlatform = 'facebook';
+        function setPlatform(p) {
+            currentPlatform = p;
+            document.getElementById('btn-fb').className = p === 'facebook' ? 'flex-1 py-3 rounded-xl transition-all bg-blue-600 text-white font-bold' : 'flex-1 py-3 rounded-xl transition-all hover:bg-white/5 text-white font-bold';
+            document.getElementById('btn-tt').className = p === 'tiktok' ? 'flex-1 py-3 rounded-xl transition-all bg-pink-600 text-white font-bold' : 'flex-1 py-3 rounded-xl transition-all hover:bg-white/5 text-white font-bold';
+            document.getElementById('target-id').placeholder = p === 'facebook' ? 'Nhập link trang cá nhân...' : 'Nhập username @...';
+            updatePrice();
+        }
+
+        function updatePrice() {
+            const qty = parseInt(document.getElementById('quantity').value) || 0;
+            const sv = document.getElementById('server-select').value;
+            let rate = 10;
+            if (sv === '2') rate = 25;
+            if (sv === 'vip') rate = 50;
+            const total = qty * rate;
+            document.getElementById('total-price').innerText = total.toLocaleString('vi-VN');
+            return total;
+        }
+
+        async function handleBuff() {
+            const target = document.getElementById('target-id').value.trim();
+            const qty = parseInt(document.getElementById('quantity').value);
+            const cost = updatePrice();
+
+            if (!target) return showToast("Vui lòng nhập Link/Username!", "error");
+            if (qty < 100) return showToast("Số lượng tối thiểu là 100!", "error");
+            if (state.balance < cost) {
+                showToast("Số dư không đủ! Hãy nạp thêm.", "error");
+                window.location.hash = "deposit";
                 return;
             }
 
-            const btn = document.getElementById('boost-btn');
-            const progressContainer = document.getElementById('progress-container');
-            const progressFill = document.getElementById('progress-fill');
-            const statusText = document.getElementById('status-text');
-            const percentText = document.getElementById('percent-text');
+            // Start Processing
+            const btn = document.getElementById('btn-submit');
+            const box = document.getElementById('status-box');
+            const bar = document.getElementById('progress-bar');
+            const label = document.getElementById('status-label');
+            const percentVal = document.getElementById('percent-val');
+            const consoleLog = document.getElementById('console-log');
 
             btn.disabled = true;
             btn.style.opacity = '0.5';
-            btn.innerText = "Đang xử lý...";
-            progressContainer.classList.remove('hidden');
+            box.classList.remove('hidden');
+            consoleLog.innerHTML = '';
 
-            let progress = 0;
-            const stages = [
-                "Đang phân tích cấu trúc tài khoản...",
-                "Đang thiết lập proxy an toàn...",
-                "Đang gửi tín hiệu tới máy chủ...",
-                "Đang xác thực bảo mật...",
-                "Đang tiến hành buff follower..."
+            const logs = [
+                "INIT: Connecting to NGZHIAIT Cluster...",
+                "API: Fetching target data: " + target,
+                "SEC: Setting up encrypted proxy tunnel...",
+                "SEC: Bypassing anti-spam filters...",
+                "AUTH: Authenticating with Node_Server_2026...",
+                "FLOW: Sending follower signals (x" + qty + ")...",
+                "SYNC: Updating database state...",
+                "DONE: Operation successful."
             ];
 
-            const interval = setInterval(() => {
-                progress += Math.random() * 5;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    statusText.innerText = "Hoàn thành! Follow sẽ tăng dần trong vài phút.";
-                    showToast("Buff thành công!");
-                    
-                    setTimeout(() => {
-                        btn.disabled = false;
-                        btn.style.opacity = '1';
-                        btn.innerText = "Bắt đầu Buff Ngay";
-                        progressContainer.classList.add('hidden');
-                        progressFill.style.width = '0%';
-                        percentText.innerText = "0%";
-                    }, 3000);
-                }
-
-                progressFill.style.width = progress + '%';
-                percentText.innerText = Math.floor(progress) + '%';
+            for (let i = 0; i <= 100; i += Math.floor(Math.random() * 5) + 2) {
+                if (i > 100) i = 100;
+                bar.style.width = i + '%';
+                percentVal.innerText = i + '%';
                 
-                // Change status text based on progress stage
-                const stageIdx = Math.floor((progress / 100) * stages.length);
-                if(stageIdx < stages.length) statusText.innerText = stages[stageIdx];
+                // Add console log periodically
+                const logIdx = Math.floor((i / 100) * logs.length);
+                if (logs[logIdx] && !consoleLog.innerHTML.includes(logs[logIdx])) {
+                    const logLine = document.createElement('p');
+                    logLine.innerText = "> " + logs[logIdx];
+                    consoleLog.appendChild(logLine);
+                    consoleLog.scrollTop = consoleLog.scrollHeight;
+                }
+                
+                if (i < 40) label.innerText = "Đang khởi tạo...";
+                else if (i < 80) label.innerText = "Đang đẩy API...";
+                else label.innerText = "Đang xác thực...";
 
-            }, 200);
-        }
+                await new Promise(r => setTimeout(r, 100));
+            }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toast-message');
-            toastMsg.innerText = msg;
-            toast.style.transform = 'translateY(0)';
-            toast.style.opacity = '1';
+            // Finalize
+            state.balance -= cost;
+            const now = new Date();
+            state.history.push({
+                target: target,
+                platform: currentPlatform,
+                qty: qty,
+                time: `${now.getHours()}:${now.getMinutes()} - ${now.getDate()}/${now.getMonth() + 1}`
+            });
+            saveState();
+
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            showToast("Buff thành công đơn hàng x" + qty.toLocaleString());
 
             setTimeout(() => {
-                toast.style.transform = 'translateY(20px)';
-                toast.style.opacity = '0';
+                box.classList.add('hidden');
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                document.getElementById('target-id').value = '';
             }, 3000);
         }
+
+        // --- Wheel ---
+        const prizes = [
+            { text: "1.000đ", val: 1000, color: "#111" },
+            { text: "Mất lượt", val: 0, color: "#222" },
+            { text: "10.000đ", val: 10000, color: "#111" },
+            { text: "GIẢM 20%", val: 0, color: "#222" },
+            { text: "5.000đ", val: 5000, color: "#111" },
+            { text: "Cộng 1%", val: 0, color: "#222" },
+            { text: "50.000đ", val: 50000, color: "#111" },
+            { text: "Mã VIP", val: 0, color: "#222" }
+        ];
+
+        function initWheel() {
+            const container = document.getElementById('wheel-container');
+            prizes.forEach((p, i) => {
+                const seg = document.createElement('div');
+                seg.className = 'wheel-segment';
+                seg.style.transform = `rotate(${i * (360/prizes.length)}deg) skewY(-45deg)`;
+                seg.style.backgroundColor = p.color;
+                seg.innerHTML = `<span style="transform: skewY(45deg) rotate(22.5deg); position: absolute; bottom: 30%; right: 20%; font-size: 10px; font-weight: bold; color: #fff;">${p.text}</span>`;
+                container.appendChild(seg);
+            });
+        }
+
+        let isSpinning = false;
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            const container = document.getElementById('wheel-container');
+            const rand = Math.floor(Math.random() * 360) + 1800;
+            container.style.transform = `rotate(${rand}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                const deg = rand % 360;
+                const idx = Math.floor((360 - deg) / (360/prizes.length)) % prizes.length;
+                const win = prizes[idx];
+                if (win.val > 0) {
+                    addBalance(win.val);
+                    confetti({ particleCount: 100, origin: { y: 0.8 } });
+                } else {
+                    showToast("Bạn trúng ô: " + win.text, "error");
+                }
+            }, 4000);
+        }
+
+        // --- Utils ---
+        function copyText(txt) {
+            navigator.clipboard.writeText(txt);
+            showToast("Đã sao chép: " + txt);
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const message = document.getElementById('toast-message');
+            message.innerText = msg;
+            icon.className = type === "success" ? "w-8 h-8 rounded-full bg-cyan-500 flex items-center justify-center" : "w-8 h-8 rounded-full bg-red-500 flex items-center justify-center";
+            icon.innerHTML = type === "success" ? '<i data-lucide="check" class="text-black w-4 h-4"></i>' : '<i data-lucide="alert-circle" class="text-white w-4 h-4"></i>';
+            lucide.createIcons();
+            toast.style.transform = 'translateX(-50%) translateY(0)';
+            toast.style.opacity = '1';
+            setTimeout(() => { toast.style.transform = 'translateX(-50%) translateY(20px)'; toast.style.opacity = '0'; }, 3000);
+        }
+
+        // Init App
+        initWheel();
+        renderUI();
+        lucide.createIcons();
+        document.getElementById('mobile-menu-btn').onclick = () => document.getElementById('mobile-menu').classList.toggle('hidden');
+
     </script>
 </body>
 </html>
