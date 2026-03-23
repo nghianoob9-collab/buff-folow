@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechFollow - Hệ Thống Tăng Follow Cao Cấp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg-dark: #050505;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+        }
+
+        /* Slider Custom */
+        .slide {
+            display: none;
+            animation: fade 0.8s ease-in-out;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Fake Progress bar for tool */
+        .progress-bar {
+            width: 0%;
+            height: 4px;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            transition: width 0.5s ease;
+        }
+
+        .tech-card:hover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 255, 0.05);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header & Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-3">
+                    <img src="https://i.postimg.cc/sxB7Gk7V/Chat-GPT-Image-16-18-40-3-thg-12-2025.png" alt="TechFollow Logo" class="w-12 h-12 object-contain rounded-xl shadow-lg shadow-cyan-500/20">
+                    <span class="text-2xl font-extrabold tracking-tighter uppercase">TECH<span class="text-cyan-400">FOLLOW</span></span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="nav-link font-medium">Trang Chủ</a>
+                    <a href="#tool" class="nav-link font-medium">Công Cụ</a>
+                    <a href="#services" class="nav-link font-medium">Dịch Vụ</a>
+                    <a href="#contact" class="nav-link font-medium">Liên Hệ</a>
+                    <button class="btn-primary px-6 py-2.5 rounded-full text-sm font-bold">Bắt Đầu Ngay</button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="p-2">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden glass border-b border-white/10 p-4 space-y-4">
+            <a href="#" class="block text-lg">Trang Chủ</a>
+            <a href="#tool" class="block text-lg">Công Cụ</a>
+            <a href="#services" class="block text-lg">Dịch Vụ</a>
+            <a href="#contact" class="block text-lg">Liên Hệ</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20">
+        
+        <!-- Hero Slider Section -->
+        <section class="relative overflow-hidden py-20 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div id="hero-slider" class="relative h-[400px] md:h-[500px]">
+                    <!-- Slide 1 -->
+                    <div class="slide active">
+                        <div class="grid md:grid-cols-2 gap-10 items-center h-full">
+                            <div class="space-y-6">
+                                <h1 class="text-5xl md:text-7xl font-black leading-tight">
+                                    Bứt Phá <span class="gradient-text">Follow</span> <br>Trong Tích Tắc
+                                </h1>
+                                <p class="text-gray-400 text-lg max-w-md">
+                                    Hệ thống tự động hóa 100% giúp bạn xây dựng thương hiệu cá nhân trên mạng xã hội một cách bền vững và an toàn.
+                                </p>
+                                <div class="flex gap-4">
+                                    <button class="btn-primary px-8 py-4 rounded-xl font-bold flex items-center gap-2">
+                                        Thử ngay <i data-lucide="arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="hidden md:flex justify-center relative">
+                                <div class="w-80 h-80 rounded-full bg-cyan-500/20 blur-[100px] absolute"></div>
+                                <img src="https://img.icons8.com/clouds/500/facebook-new.png" alt="Facebook Illustration" class="w-64 h-64 object-contain animate-bounce">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Slide 2 -->
+                    <div class="slide">
+                        <div class="grid md:grid-cols-2 gap-10 items-center h-full">
+                            <div class="space-y-6">
+                                <h1 class="text-5xl md:text-7xl font-black leading-tight">
+                                    Làm Chủ <span class="text-pink-500">TikTok</span> <br>Triệu View
+                                </h1>
+                                <p class="text-gray-400 text-lg max-w-md">
+                                    Tăng tương tác, tăng follower thực giúp kênh của bạn dễ dàng lên xu hướng và tiếp cận hàng triệu khách hàng.
+                                </p>
+                                <div class="flex gap-4">
+                                    <button class="bg-white text-black hover:bg-gray-200 px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all">
+                                        Khám phá <i data-lucide="play"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="hidden md:flex justify-center relative">
+                                <div class="w-80 h-80 rounded-full bg-pink-500/20 blur-[100px] absolute"></div>
+                                <img src="https://img.icons8.com/clouds/500/tiktok.png" alt="TikTok Illustration" class="w-64 h-64 object-contain animate-pulse">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tool Section -->
+        <section id="tool" class="py-20 bg-black/50">
+            <div class="max-w-4xl mx-auto px-4">
+                <div class="glass rounded-3xl p-8 md:p-12">
+                    <div class="text-center mb-10">
+                        <h2 class="text-3xl font-bold mb-2">Bảng Điều Khiển Buff Follow</h2>
+                        <p class="text-gray-400">Vui lòng chọn nền tảng và nhập thông tin cần thiết</p>
+                    </div>
+
+                    <!-- Platform Tabs -->
+                    <div class="flex p-1 bg-white/5 rounded-2xl mb-8">
+                        <button onclick="switchPlatform('facebook')" id="tab-fb" class="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all bg-blue-600">
+                            <i data-lucide="facebook"></i> Facebook
+                        </button>
+                        <button onclick="switchPlatform('tiktok')" id="tab-tt" class="flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-white/5">
+                            <i data-lucide="music-2"></i> TikTok
+                        </button>
+                    </div>
+
+                    <!-- Input Form -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Đường dẫn hoặc Username</label>
+                            <div class="relative">
+                                <i data-lucide="link" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5"></i>
+                                <input type="text" id="target-id" placeholder="https://facebook.com/user..." class="w-full bg-white/5 border border-white/10 rounded-xl py-4 pl-12 pr-4 focus:outline-none focus:border-cyan-500 transition-all">
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Số lượng Follow cần tăng</label>
+                                <input type="number" id="quantity" value="1000" min="100" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none focus:border-cyan-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">Tốc độ thực hiện</label>
+                                <select class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none focus:border-cyan-500">
+                                    <option class="bg-gray-900">Nhanh (Cấp tốc)</option>
+                                    <option class="bg-gray-900">Trung bình (Tự nhiên)</option>
+                                    <option class="bg-gray-900">Chậm (An toàn nhất)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Progress Section -->
+                        <div id="progress-container" class="hidden space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span id="status-text">Đang kết nối API...</span>
+                                <span id="percent-text">0%</span>
+                            </div>
+                            <div class="w-full bg-white/5 rounded-full overflow-hidden">
+                                <div id="progress-fill" class="progress-bar"></div>
+                            </div>
+                        </div>
+
+                        <button onclick="startBoost()" id="boost-btn" class="w-full btn-primary py-5 rounded-2xl font-black text-lg tracking-widest uppercase">
+                            Bắt đầu Buff Ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services/Categories Section -->
+        <section id="services" class="py-20 max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-black mb-4">Danh Mục Dịch Vụ</h2>
+                <div class="w-20 h-1 bg-cyan-500 mx-auto"></div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="glass tech-card p-8 rounded-3xl border border-white/10 transition-all cursor-pointer">
+                    <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="users" class="text-cyan-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Tăng Follower Thật</h3>
+                    <p class="text-gray-400">Tài khoản có hoạt động, ảnh đại diện và bài viết đầy đủ, cam kết không tụt.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="glass tech-card p-8 rounded-3xl border border-white/10 transition-all cursor-pointer">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="heart" class="text-purple-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Tăng Like/Tim</h3>
+                    <p class="text-gray-400">Tăng tương tác cho bài viết và video, giúp tiếp cận được nhiều người dùng hơn.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="glass tech-card p-8 rounded-3xl border border-white/10 transition-all cursor-pointer">
+                    <div class="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6">
+                        <i data-lucide="shield-check" class="text-green-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Bảo Mật Tuyệt Đối</h3>
+                    <p class="text-gray-400">Không yêu cầu mật khẩu, cam kết bảo mật thông tin khách hàng 100%.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 relative">
+            <div class="max-w-7xl mx-auto px-4 grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <h2 class="text-4xl font-black mb-6">Liên Hệ Với <br><span class="gradient-text">Đội Ngũ Kỹ Thuật</span></h2>
+                    <p class="text-gray-400 mb-8 text-lg">Bạn gặp vấn đề khi sử dụng tool? Hãy để lại lời nhắn, đội ngũ hỗ trợ 24/7 của chúng tôi sẽ phản hồi ngay lập tức.</p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 glass rounded-full flex items-center justify-center text-cyan-400">
+                                <i data-lucide="mail"></i>
+                            </div>
+                            <span>nghianoob9@gmail.com</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 glass rounded-full flex items-center justify-center text-purple-400">
+                                <i data-lucide="phone"></i>
+                            </div>
+                            <span>+84 388 977 874</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass p-8 rounded-3xl">
+                    <form class="space-y-4" onsubmit="event.preventDefault(); showToast('Tin nhắn của bạn đã được gửi!');">
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" placeholder="Họ tên" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none">
+                            <input type="email" placeholder="Email" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none">
+                        </div>
+                        <textarea placeholder="Nội dung cần hỗ trợ..." rows="4" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-4 focus:outline-none"></textarea>
+                        <button class="w-full btn-primary py-4 rounded-xl font-bold">Gửi Tin Nhắn</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 py-12 glass mt-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-2">
+                    <div class="flex items-center gap-3 mb-6">
+                        <img src="https://i.postimg.cc/sxB7Gk7V/Chat-GPT-Image-16-18-40-3-thg-12-2025.png" alt="TechFollow Logo" class="w-10 h-10 object-contain rounded-lg shadow-md shadow-cyan-500/10">
+                        <span class="text-xl font-extrabold tracking-tighter uppercase">TechFollow</span>
+                    </div>
+                    <p class="text-gray-400 max-w-sm">Dẫn đầu về giải pháp tăng trưởng mạng xã hội tại Việt Nam. Sử dụng công nghệ AI để tối ưu hóa tương tác thực.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">Liên Kết Nhanh</h4>
+                    <ul class="space-y-4 text-gray-400">
+                        <li><a href="#" class="hover:text-cyan-400 transition-all">Quy định sử dụng</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition-all">Chính sách bảo mật</a></li>
+                        <li><a href="#" class="hover:text-cyan-400 transition-all">Câu hỏi thường gặp</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-6">Theo Dõi Chúng Tôi</h4>
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 glass rounded-lg flex items-center justify-center hover:bg-cyan-500/20 cursor-pointer">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </div>
+                        <div class="w-10 h-10 glass rounded-lg flex items-center justify-center hover:bg-purple-500/20 cursor-pointer">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </div>
+                        <div class="w-10 h-10 glass rounded-lg flex items-center justify-center hover:bg-white/20 cursor-pointer">
+                            <i data-lucide="twitter" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center pt-8 border-t border-white/5 text-gray-500 text-sm">
+                &copy; 2026 TechFollow Global.NgzhiaIT. All rights reserved. Designed with ❤️ by DevTech.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Toast Message -->
+    <div id="toast" class="fixed bottom-10 right-10 transform translate-y-20 opacity-0 transition-all duration-500 z-[100]">
+        <div class="glass bg-white/10 px-6 py-4 rounded-2xl flex items-center gap-4 border-cyan-500/50">
+            <i data-lucide="check-circle" class="text-cyan-400"></i>
+            <span id="toast-message">Thành công!</span>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.onclick = () => {
+            mobileMenu.classList.toggle('hidden');
+        };
+
+        // Slider Logic
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        setInterval(nextSlide, 5000);
+
+        // Platform Switcher
+        let activePlatform = 'facebook';
+        function switchPlatform(platform) {
+            activePlatform = platform;
+            const tabFb = document.getElementById('tab-fb');
+            const tabTt = document.getElementById('tab-tt');
+            const input = document.getElementById('target-id');
+
+            if (platform === 'facebook') {
+                tabFb.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all bg-blue-600';
+                tabTt.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-white/5';
+                input.placeholder = 'https://facebook.com/user...';
+            } else {
+                tabFb.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all hover:bg-white/5';
+                tabTt.className = 'flex-1 py-3 rounded-xl flex items-center justify-center gap-2 transition-all bg-pink-600';
+                input.placeholder = '@username_tiktok';
+            }
+        }
+
+        // Tool Logic (Simulation)
+        function startBoost() {
+            const targetId = document.getElementById('target-id').value;
+            if (!targetId) {
+                showToast("Vui lòng nhập thông tin tài khoản!");
+                return;
+            }
+
+            const btn = document.getElementById('boost-btn');
+            const progressContainer = document.getElementById('progress-container');
+            const progressFill = document.getElementById('progress-fill');
+            const statusText = document.getElementById('status-text');
+            const percentText = document.getElementById('percent-text');
+
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.innerText = "Đang xử lý...";
+            progressContainer.classList.remove('hidden');
+
+            let progress = 0;
+            const stages = [
+                "Đang phân tích cấu trúc tài khoản...",
+                "Đang thiết lập proxy an toàn...",
+                "Đang gửi tín hiệu tới máy chủ...",
+                "Đang xác thực bảo mật...",
+                "Đang tiến hành buff follower..."
+            ];
+
+            const interval = setInterval(() => {
+                progress += Math.random() * 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    statusText.innerText = "Hoàn thành! Follow sẽ tăng dần trong vài phút.";
+                    showToast("Buff thành công!");
+                    
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.innerText = "Bắt đầu Buff Ngay";
+                        progressContainer.classList.add('hidden');
+                        progressFill.style.width = '0%';
+                        percentText.innerText = "0%";
+                    }, 3000);
+                }
+
+                progressFill.style.width = progress + '%';
+                percentText.innerText = Math.floor(progress) + '%';
+                
+                // Change status text based on progress stage
+                const stageIdx = Math.floor((progress / 100) * stages.length);
+                if(stageIdx < stages.length) statusText.innerText = stages[stageIdx];
+
+            }, 200);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = msg;
+            toast.style.transform = 'translateY(0)';
+            toast.style.opacity = '1';
+
+            setTimeout(() => {
+                toast.style.transform = 'translateY(20px)';
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
